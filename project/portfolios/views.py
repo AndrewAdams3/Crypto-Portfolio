@@ -1,3 +1,4 @@
+from functools import reduce
 from django.db import connection, transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -14,29 +15,16 @@ def get_portfolio(request: Request, portfolioId: int):
     portfolios = Portfolio.objects.filter(user_id=portfolioId)
     response = []
     for portfolio in portfolios:
-        with connection.cursor() as cursor:
-            query = f'''
-                select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume from portfolios_currencyallocation as ca
-                left join currencies_currency as c on c.id = ca.currency_id
-                left join currencies_currencysnapshot as cs on ca.currency_id = cs.currency_id
-                where ca.portfolio_id = %s
-            '''
-            cursor.execute(query, [portfolio.id])
-            rows = cursor.fetchall()
-
+        currencyAllocations =  CurrencyAllocation.objects.select_related('currency').filter(portfolio_id=portfolio.id)
         currencies = []
-        for column in rows:
+        for allocatedCurrency in currencyAllocations:
             currency = {
-                'id': column[2],
-                'name': column[0],
-                'symbol': column[1],
-                'market_cap': column[3],
-                'price': column[4],
-                'volume': column[5]
+                'id': allocatedCurrency.currency.id,
+                'name': allocatedCurrency.currency.name,
+                'symbol': allocatedCurrency.currency.symbol
             }
             currencies.append(currency)
 
-        print(currencies)
         portfolioSerializer = PortfolioSerializer(portfolio)
         response.append({
             'portfolio': portfolioSerializer.data,
@@ -105,3 +93,37 @@ def remove_currency(request: Request, portfolioId: int, currencyId: int):
     currencyAllocation = CurrencyAllocation.objects.get(portfolio_id=portfolioId, currency_id=currencyId)
     currencyAllocation.delete()
     return Response(True, status=200)
+
+
+@api_view(['GET'])
+def get_metrics(request: Request, portfolioId: int):
+    with connection.cursor() as cursor:
+        query = f'''
+            select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume from portfolios_currencyallocation as ca
+            left join currencies_currency as c on c.id = ca.currency_id
+            left join currencies_currencysnapshot as cs on ca.currency_id = cs.currency_id
+            where ca.portfolio_id = %s
+        '''
+        cursor.execute(query, [portfolioId])
+        rows = cursor.fetchall()
+
+        currencies = []
+        for column in rows:
+            currency = {
+                'id': column[2],
+                'name': column[0],
+                'symbol': column[1],
+                'market_cap': column[3],
+                'price': column[4],
+                'volume': column[5]
+            }
+            currencies.append(currency)
+
+        totalVolume = reduce(lambda x, y: x + y['volume'], currencies, 0)
+        highestTradingVolume = reduce(lambda x, y: x if x['volume'] > y['volume'] else y, currencies)
+        
+        return Response({
+            'currencies': currencies,
+            'totalVolume': totalVolume,
+            'highestTradingVolume': highestTradingVolume
+        })

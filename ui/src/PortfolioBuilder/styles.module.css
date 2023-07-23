@@ -6,3 +6,9 @@
     display: flex;
     gap: 10px;
 }
+
+.portfolio_title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

@@ -47,6 +47,7 @@ def sync_currency_snapshot():
 
         snapshot = CurrencySnapshot.objects.filter(currency_id=currency_obj.id).first()
         if snapshot:
+            print(currency['current_price'], str(currency['current_price']))
             snapshot.price=currency['current_price'],
             snapshot.market_cap=currency['market_cap'],
             snapshot.volume=currency['total_volume'],

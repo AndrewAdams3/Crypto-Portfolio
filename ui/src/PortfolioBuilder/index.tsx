@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CurrencyTile } from "../CurrencyTile";
 import * as classes from './styles.module.css';
+import { Metrics } from "../Metrics";
 
 export type PortfolioBuilderInput = {
     portfolio: {
@@ -18,7 +19,8 @@ export type PortfolioBuilderInput = {
 export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortfolio}: PortfolioBuilderInput) {
     const [availableCurrencies, setAvailableCurrencies] = useState<any[]>([]);
     const [activeCurrencies, setActiveCurrencies] = useState<any[]>(portfolio.currencies ?? []);
-    
+    const [showMetrics, setShowMetrics] = useState(false);
+
     useEffect(() => {
         fetch("http://localhost:8000/currency/")
             .then((response) => response.json())
@@ -82,14 +84,23 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
         await onCreatePortfolio();
     }
 
+    const viewMetrics = () => {
+        setShowMetrics(true)
+    }
+    
     return (<>
         <div className={classes.container}>
             <div style={{flex: 1}}>
-                <h1>Portfolio</h1>
+                <span className={classes.portfolio_title}>
+                    <h1>
+                        Portfolio
+                    </h1>
+                    <button onClick={viewMetrics}>View Metrics?</button>
+                </span>
                 {
                     activeCurrencies
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => removeCurrency(c)} name={c.name} marketCap={c.market_cap} />)
+                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => removeCurrency(c)} name={c.name} />)
                 } 
             </div>
             <div style={{flex: 1}}>
@@ -107,6 +118,9 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
             <div>    
                 <button onClick={createPortfolio}>Create New Portfolio</button>
             </div>
+        }
+        {
+            showMetrics && <Metrics currencies={activeCurrencies.map(c => c.id)} userId={userId}/>
         }
     </>);
 }
