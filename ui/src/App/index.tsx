@@ -14,10 +14,11 @@ export function App() {
     const fetchPortfolios = async () => {
         const res = await fetch(`http://localhost:8000/portfolio/${userId}/`)
         const json = await res.json();
-        setPortfolios(json);
         if(json.length > 0) {
             setHasPortfolio(true)
         }
+
+        setPortfolios(json);
     }
 
     const createPortfolio = () => {

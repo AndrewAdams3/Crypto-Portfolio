@@ -1,9 +1,10 @@
-from django.db import transaction
+from django.db import connection, transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 
 from currencies.serializers import CurrencySerializer
+from currencies.models import CurrencySnapshot
 
 from . models import *
 from . serializer import *
@@ -13,13 +14,33 @@ def get_portfolio(request: Request, portfolioId: int):
     portfolios = Portfolio.objects.filter(user_id=portfolioId)
     response = []
     for portfolio in portfolios:
-        currencies = CurrencyAllocation.objects.select_related('currency').filter(portfolio_id=portfolio.id)
+        with connection.cursor() as cursor:
+            query = f'''
+                select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume from portfolios_currencyallocation as ca
+                left join currencies_currency as c on c.id = ca.currency_id
+                left join currencies_currencysnapshot as cs on ca.currency_id = cs.currency_id
+                where ca.portfolio_id = %s
+            '''
+            cursor.execute(query, [portfolio.id])
+            rows = cursor.fetchall()
+
+        currencies = []
+        for column in rows:
+            currency = {
+                'id': column[2],
+                'name': column[0],
+                'symbol': column[1],
+                'market_cap': column[3],
+                'price': column[4],
+                'volume': column[5]
+            }
+            currencies.append(currency)
+
         print(currencies)
-        currencySerializer = CurrencySerializer(map(lambda x: x.currency, currencies), many=True)
         portfolioSerializer = PortfolioSerializer(portfolio)
         response.append({
             'portfolio': portfolioSerializer.data,
-            'currencies': currencySerializer.data
+            'currencies': currencies
         })
 
     return Response(response)

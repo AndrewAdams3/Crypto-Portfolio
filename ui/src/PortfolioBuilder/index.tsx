@@ -18,7 +18,7 @@ export type PortfolioBuilderInput = {
 export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortfolio}: PortfolioBuilderInput) {
     const [availableCurrencies, setAvailableCurrencies] = useState<any[]>([]);
     const [activeCurrencies, setActiveCurrencies] = useState<any[]>(portfolio.currencies ?? []);
-        
+    
     useEffect(() => {
         fetch("http://localhost:8000/currency/")
             .then((response) => response.json())
@@ -67,7 +67,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
             return;
         }
 
-        const res = await fetch("http://localhost:8000/portfolio/", {
+        await fetch("http://localhost:8000/portfolio/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -79,7 +79,6 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                 })) 
             })
         })
-        const json = await res.json();
         await onCreatePortfolio();
     }
 
@@ -90,7 +89,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                 {
                     activeCurrencies
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => removeCurrency(c)} name={c.name} />)
+                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => removeCurrency(c)} name={c.name} marketCap={c.market_cap} />)
                 } 
             </div>
             <div style={{flex: 1}}>
@@ -99,7 +98,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                     availableCurrencies
                     .filter(c => !activeCurrencies.find(ac => ac.id === c.id))
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(c => <CurrencyTile key={`available-${c.id}`} buttonText="Add To Portfolio" click={() => addCurrency(c)} name={c.name} />)
+                    .map(c => <CurrencyTile key={`available-${c.id}`} buttonText="Add To Portfolio" click={() => addCurrency(c)} name={c.name}/>)
                 }
             </div>
         </div>
