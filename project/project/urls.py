@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('users.urls'), name='users'),
     path('portfolio/', include('portfolios.urls'), name='portfolios'),
+    path('currency/', include('currencies.urls'), name='currencies'),
 ]

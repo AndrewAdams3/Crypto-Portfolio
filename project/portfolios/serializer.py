@@ -6,7 +6,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         model = Portfolio
         fields = [
             "id",
-            "userId",
+            "user",
             "created_at",
             "updated_at"
         ]
@@ -17,8 +17,8 @@ class CurrencyAllocationSerializer(serializers.ModelSerializer):
         model = CurrencyAllocation
         fields = [
             "id",
-            "portfolioId",
-            "currencyId",
+            "currency_id",
+            "portfolio_id",
             "created_at",
             "updated_at"
         ]

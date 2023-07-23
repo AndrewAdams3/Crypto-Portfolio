@@ -4,14 +4,26 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 
+from currencies.serializers import CurrencySerializer
+
 from . models import *
 from . serializer import *
   
 @api_view(['GET'])
 def get_portfolio(request: Request, portfolioId: int):
-    portfolios = Portfolio.objects.filter(userId=portfolioId)
-    serializer = PortfolioSerializer(portfolios, many=True)
-    return Response(serializer.data)
+    portfolios = Portfolio.objects.filter(user_id=portfolioId)
+    response = []
+    for portfolio in portfolios:
+        currencies = CurrencyAllocation.objects.select_related('currency').filter(portfolio_id=portfolio.id)
+        print(currencies)
+        currencySerializer = CurrencySerializer(map(lambda x: x.currency, currencies), many=True)
+        portfolioSerializer = PortfolioSerializer(portfolio)
+        response.append({
+            'portfolio': portfolioSerializer.data,
+            'currencies': currencySerializer.data
+        })
+
+    return Response(response)
 
 @api_view(['POST'])
 def create_portfolio(request: Request):
@@ -44,22 +56,23 @@ def create_portfolio(request: Request):
         return Response({"error": str(e)}, status=500)
         
 
-@api_view(['POST'])
-def add_currency(request: Request, portfolioId: int):
-    newCurrencyData = {
-        'portfolioId': portfolioId,
-        'currencyId': request.data.get('currencyId'),
-    }
-    serializer = CurrencyAllocationSerializer(data=newCurrencyData)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    else: return Response(serializer.errors)
-
-@api_view(['DELETE'])
-def add_currency(request: Request, portfolioId: int, currencyId: int):
-    currencyAllocation = CurrencyAllocation.objects.get(portfolioId=portfolioId, currencyId=currencyId)
-    currencyAllocation.delete()
+@api_view(['POST', 'DELETE'])
+def handle_currency(request: Request, portfolioId: int):
+    if request.method == 'POST':
+        return add_currency(request, portfolioId, request.data.get('currencyId'))
+    elif request.method == 'DELETE':
+        return remove_currency(request, portfolioId, request.data.get('currencyId'))
     
-    return True
+def add_currency(request: Request, portfolioId: int, currencyId):
+    newCurrencyAllocation = CurrencyAllocation(
+        portfolio_id=portfolioId, 
+        currency_id=currencyId
+    )
+    newCurrencyAllocation.save()
+
+    return Response(True, status=200)
+
+def remove_currency(request: Request, portfolioId: int, currencyId: int):
+    currencyAllocation = CurrencyAllocation.objects.get(portfolio_id=portfolioId, currency_id=currencyId)
+    currencyAllocation.delete()
+    return Response(True, status=200)

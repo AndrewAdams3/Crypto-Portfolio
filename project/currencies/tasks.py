@@ -40,16 +40,22 @@ def sync_currency_snapshot():
             name=currency['name'],
             symbol=currency['symbol']
         )
-
         if created:
             print("Added new currency " + currency['name'] + " (" + currency['symbol'] + ")")
             
-        snapshot_obj, created = CurrencySnapshot.objects.update_or_create(
-            currencyId=currency_obj,
-            price=currency['current_price'],
-            market_cap=currency['market_cap'],
-            volume=currency['total_volume'],
-        )
-
         currency_obj.save()
-        snapshot_obj.save()
+
+        snapshot = CurrencySnapshot.objects.filter(currency_id=currency_obj.id).first()
+        if snapshot:
+            snapshot.price=currency['current_price'],
+            snapshot.market_cap=currency['market_cap'],
+            snapshot.volume=currency['total_volume'],
+            snapshot.save()
+        else:
+            snapshot_obj = CurrencySnapshot(
+                currency_id=currency_obj.id,
+                price=currency['current_price'],
+                market_cap=currency['market_cap'],
+                volume=currency['total_volume'],
+            )
+            snapshot_obj.save()

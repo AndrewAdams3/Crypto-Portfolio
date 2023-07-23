@@ -11,12 +11,8 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'sync-currency-snapshot-daily': {
         'task': 'currencies.tasks.sync_currency_snapshot',
-        'schedule': crontab(minute='*/30') # Change to daily
+        'schedule': crontab(minute='*/1') # Change to daily
     },
 }
 
 app.autodiscover_tasks()
-
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))

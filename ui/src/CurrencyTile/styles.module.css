@@ -1,0 +1,11 @@
+.currency_tile {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid black;
+    border-radius: 30px;
+    overflow: hidden;
+    padding: 5px 30px;
+    height: 30px;
+    align-items: center;
+    margin: 10px 0px;
+}
