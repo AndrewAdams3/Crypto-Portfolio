@@ -18,3 +18,11 @@
 
 # Project Structure
 - 
+
+crypto data https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd
+
+
+
+# Improvements
+1. Standardized validations
+2. Standardized exception handling / response messages
