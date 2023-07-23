@@ -84,8 +84,8 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
         await onCreatePortfolio();
     }
 
-    const viewMetrics = () => {
-        setShowMetrics(true)
+    const viewMetrics = (value: boolean) => {
+        setShowMetrics(value)
     }
     
     return (<>
@@ -95,7 +95,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                     <h1>
                         Portfolio
                     </h1>
-                    <button onClick={viewMetrics}>View Metrics?</button>
+                    <button onClick={() => viewMetrics(true)}>View Metrics?</button>
                 </span>
                 {
                     activeCurrencies
@@ -120,7 +120,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
             </div>
         }
         {
-            showMetrics && <Metrics currencies={activeCurrencies.map(c => c.id)} userId={userId}/>
+            showMetrics && <Metrics userId={userId} onClose={() => viewMetrics(false)}/>
         }
     </>);
 }

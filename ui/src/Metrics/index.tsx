@@ -1,47 +1,63 @@
 import { useEffect, useMemo, useState } from "react";
+import * as classes from './styles.module.css';
 
-type Metric = {
+type CurrencyMetric = {
     id: number;
     name: string;
-    marketCap: number;
+    symbol: string;
+    market_cap: number;
     volume: number;
     price: number;
 }
 
-function MetricRow(metric: Metric) {
+type MetricResponse = {
+    currencies: CurrencyMetric[];
+    totalVolume: number;
+    highestTradingVolume: CurrencyMetric;
+}
+
+type MetricRowProps = {
+    metric: CurrencyMetric;
+    highestVolume: boolean;
+}
+
+function MetricRow({ metric, highestVolume }: MetricRowProps) {
     return (
-    <tr key={metric.id}>
+    <tr key={metric.id} style={highestVolume ? {border: '1px solid green'} : {}}>
         <td>{metric.name}</td>
-        <td>{metric.marketCap}</td>
-        <td>{metric.volume}</td>
+        <td>{metric.market_cap}</td>
+        <td style={highestVolume ? {color: 'green'} : {}}>{metric.volume}{highestVolume ? "*" : null}</td>
         <td>{metric.price}</td>
     </tr>
     )
 }
 
 type MetricsProps = {
-    currencies: number[];
     userId: number;
+    onClose: () => void;
 }
 
-export function Metrics({currencies, userId}: MetricsProps) {
-    const [metrics, setMetrics] = useState<Metric[]>([]);
+export function Metrics({userId, onClose}: MetricsProps) {
+    const [metrics, setMetrics] = useState<MetricResponse>();
 
     useEffect(() => {
         //fetch metrics
         fetch(`http://localhost:8000/portfolio/${userId}/metrics/`)
             .then((response) => response.json())
-            .then((json) => setMetrics(json))
+            .then((json: MetricResponse) => setMetrics(json))
     }, []);
 
     const rows = useMemo(() => {
-        return metrics.map((metric) => (
-            <MetricRow key={metric.id} {...metric} />
+        if(!metrics) return null;
+
+        return metrics.currencies.map((metric) => (
+            <MetricRow key={metric.id} metric={metric} highestVolume={metric.id === metrics.highestTradingVolume.id} />
         ))
     }, [metrics]);
 
     return (
-        <div>
+        <div className={classes.container}>
+            <button className={classes.close_button} onClick={onClose}>Close</button>
             <table>
                 <thead>
                     <tr>
@@ -55,6 +71,8 @@ export function Metrics({currencies, userId}: MetricsProps) {
                     {rows}
                 </tbody>    
             </table>
+            <p style={{color: 'green'}}>*Highest trading volume</p>
+            <p>Total Trading Volume: {metrics?.totalVolume}</p>
         </div>
     )
 }
