@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { PortfolioBuilder } from "../PortfolioBuilder";
 import * as classes from './app.module.css';
 
-const userId = 2;
+const userId = 1;
 export function App() {
     const [portfolios, setPortfolios] = useState<any[]>([]);
     const [hasPortfolio, setHasPortfolio] = useState<boolean>(false);
+    
     useEffect(() => {
         fetchPortfolios();
     }, [])

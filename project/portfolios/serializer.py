@@ -6,7 +6,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         model = Portfolio
         fields = [
             "id",
-            "user",
+            "user_id",
             "created_at",
             "updated_at"
         ]

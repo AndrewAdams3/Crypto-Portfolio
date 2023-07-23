@@ -8,6 +8,9 @@ class Portfolio(models.Model):
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, to_field='id', related_name='user', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def is_valid(self):
+        return self.user is not None
     
 class CurrencyAllocation(models.Model):
     class Meta:
@@ -18,3 +21,6 @@ class CurrencyAllocation(models.Model):
     currency = models.ForeignKey(to=Currency, to_field='id', related_name='currencyAllocation', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def is_valid(self):
+        return self.portfolio is not None and self.currency is not None

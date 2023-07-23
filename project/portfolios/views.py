@@ -1,5 +1,4 @@
 from django.db import transaction
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -8,7 +7,7 @@ from currencies.serializers import CurrencySerializer
 
 from . models import *
 from . serializer import *
-  
+
 @api_view(['GET'])
 def get_portfolio(request: Request, portfolioId: int):
     portfolios = Portfolio.objects.filter(user_id=portfolioId)
@@ -28,6 +27,8 @@ def get_portfolio(request: Request, portfolioId: int):
 @api_view(['POST'])
 def create_portfolio(request: Request):
     currencyAllocations = request.data.get('currencies')
+    portfolio = request.data.get('portfolio')
+
     if not currencyAllocations: 
         return Response({"error": "No currencies provided"}, status=400)
     if len(currencyAllocations) < 5: 
@@ -36,22 +37,29 @@ def create_portfolio(request: Request):
     try:
         with transaction.atomic():
             # Save portfolio
-            portfolioSerializer = PortfolioSerializer(data=request.data.get('portfolio'))
-            if portfolioSerializer.is_valid():        
-                portfolioSerializer.save()
-            else: return Response(portfolioSerializer.errors)
+            newPortfolio = Portfolio(user_id=portfolio['userId'])
+            if newPortfolio.is_valid():        
+                newPortfolio.save()
+            else: return Response("Invalid Portfolio", status=400)
 
             # Save currency allocations, mapping portfolio ID into the list
             currencyData: list[CurrencyAllocation] = [{
-                'portfolioId': portfolioSerializer.data['id'],
-                'currencyId': currency['currencyId'],
+                'portfolio_id': newPortfolio.id,
+                'currency_id': currency['currencyId'],
             } for currency in currencyAllocations]
 
-            currencySerializer = CurrencyAllocationSerializer(data=currencyData, many=True)
-            if currencySerializer.is_valid():
-                currencySerializer.save()
-                return Response(portfolioSerializer.data)
-            else: return Response(currencySerializer.errors)
+            for currency in currencyData:
+                newCurrency = CurrencyAllocation(
+                    currency_id=currency['currency_id'],
+                    portfolio_id=currency['portfolio_id']
+                )
+
+                if newCurrency.is_valid(): 
+                    newCurrency.save()
+                else: return Response("Invalid Currency", status=400)
+            
+            response = PortfolioSerializer(newPortfolio)
+            return Response(response.data)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
         
