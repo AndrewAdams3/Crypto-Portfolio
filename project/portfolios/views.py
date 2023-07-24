@@ -99,7 +99,7 @@ def remove_currency(request: Request, portfolioId: int, currencyId: int):
 def get_metrics(request: Request, portfolioId: int):
     with connection.cursor() as cursor:
         query = f'''
-            select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume from portfolios_currencyallocation as ca
+            select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume, cs.price_change_percentage_24h from portfolios_currencyallocation as ca
             left join currencies_currency as c on c.id = ca.currency_id
             left join currencies_currencysnapshot as cs on ca.currency_id = cs.currency_id
             where ca.portfolio_id = %s
@@ -115,7 +115,8 @@ def get_metrics(request: Request, portfolioId: int):
                 'symbol': column[1],
                 'market_cap': column[3],
                 'price': column[4],
-                'volume': column[5]
+                'volume': column[5],
+                'price_change_percentage_24h': column[6]
             }
             currencies.append(currency)
 

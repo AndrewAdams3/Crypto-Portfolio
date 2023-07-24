@@ -95,7 +95,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                     <h1>
                         Portfolio
                     </h1>
-                    <button onClick={() => viewMetrics(true)}>View Metrics?</button>
+                    <button onClick={() => viewMetrics(true)}>View Metrics</button>
                 </span>
                 {
                     activeCurrencies

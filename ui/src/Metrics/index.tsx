@@ -8,6 +8,7 @@ type CurrencyMetric = {
     market_cap: number;
     volume: number;
     price: number;
+    price_change_percentage_24h: number;
 }
 
 type MetricResponse = {
@@ -28,6 +29,7 @@ function MetricRow({ metric, highestVolume }: MetricRowProps) {
         <td>{metric.market_cap}</td>
         <td style={highestVolume ? {color: 'green'} : {}}>{metric.volume}{highestVolume ? "*" : null}</td>
         <td>{metric.price}</td>
+        <td>{metric.price_change_percentage_24h}%</td>
     </tr>
     )
 }
@@ -65,6 +67,7 @@ export function Metrics({userId, onClose}: MetricsProps) {
                         <th>Market Cap</th>
                         <th>Volume</th>
                         <th>Price</th>
+                        <th>24h Price Change</th>
                     </tr>
                 </thead>
                 <tbody>
