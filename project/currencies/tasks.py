@@ -36,12 +36,10 @@ def sync_currency_snapshot():
     data: list[CoinGeckoData] = requests.get("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd").json()
 
     for currency in data:
-        currency_obj, created = Currency.objects.update_or_create(
+        (currency_obj,) = Currency.objects.update_or_create(
             name=currency['name'],
             symbol=currency['symbol']
         )
-        if created:
-            print("Added new currency " + currency['name'] + " (" + currency['symbol'] + ")")
             
         currency_obj.save()
 

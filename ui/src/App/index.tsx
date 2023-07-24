@@ -21,10 +21,7 @@ export function App() {
     const fetchPortfolios = async () => {
         const res = await fetch(`http://localhost:8000/portfolio/${currentUser}/`)
         const json = await res.json();
-        if(json.length > 0) {
-            setHasPortfolio(true)
-        }
-
+        setHasPortfolio(json.length > 0)
         setPortfolios(json);
     }
     
