@@ -14,7 +14,7 @@ def base(request: Request):
 
 
 def getUsers(request: Request):
-    users = User.objects.all()
+    users = User.objects.all().order_by('id')
     response = []
     for user in users:
         response.append({

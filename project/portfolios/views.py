@@ -1,17 +1,13 @@
-from functools import reduce
 from django.db import connection, transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from currencies.serializers import CurrencySerializer
-from currencies.models import CurrencySnapshot
-
 from . models import *
 from . serializer import *
 
 @api_view(['GET'])
-def get_portfolio(request: Request, portfolioId: int):
+def get_portfolio(_: Request, portfolioId: int):
     portfolios = Portfolio.objects.filter(user_id=portfolioId)
     response = []
     for portfolio in portfolios:
@@ -54,9 +50,9 @@ def create_portfolio(request: Request):
             # Save currency allocations, mapping portfolio ID into the list
             currencyData: list[CurrencyAllocation] = [{
                 'portfolio_id': newPortfolio.id,
-                'currency_id': currency['currencyId'],
+                'currency_id': currency['currencyId'] 
             } for currency in currencyAllocations]
-
+        
             for currency in currencyData:
                 newCurrency = CurrencyAllocation(
                     currency_id=currency['currency_id'],
@@ -80,7 +76,7 @@ def handle_currency(request: Request, portfolioId: int):
     elif request.method == 'DELETE':
         return remove_currency(request, portfolioId, request.data.get('currencyId'))
     
-def add_currency(request: Request, portfolioId: int, currencyId):
+def add_currency(_: Request, portfolioId: int, currencyId):
     newCurrencyAllocation = CurrencyAllocation(
         portfolio_id=portfolioId, 
         currency_id=currencyId
@@ -96,7 +92,7 @@ def remove_currency(request: Request, portfolioId: int, currencyId: int):
 
 
 @api_view(['GET'])
-def get_metrics(request: Request, portfolioId: int):
+def get_metrics(_: Request, portfolioId: int):
     with connection.cursor() as cursor:
         query = f'''
             select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume, cs.price_change_percentage_24h from portfolios_currencyallocation as ca
@@ -120,8 +116,12 @@ def get_metrics(request: Request, portfolioId: int):
             }
             currencies.append(currency)
 
-        totalVolume = reduce(lambda x, y: x + y['volume'], currencies, 0)
-        highestTradingVolume = reduce(lambda x, y: x if x['volume'] > y['volume'] else y, currencies)
+        totalVolume = 0
+        highestTradingVolume = None
+        for currency in currencies:
+            totalVolume += currency['volume']
+            if not highestTradingVolume or currency['volume'] > highestTradingVolume['volume']:
+                highestTradingVolume = currency
         
         return Response({
             'currencies': currencies,

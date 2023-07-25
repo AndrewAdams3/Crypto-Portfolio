@@ -1,70 +1,23 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CurrencyTile } from "../CurrencyTile";
 import * as classes from './styles.module.css';
 import { Metrics } from "../Metrics";
+import { PortfolioDetails } from "../types";
+import { AppContext } from "../Context";
 
 export type PortfolioBuilderInput = {
-    portfolio: {
-        portfolio: {
-            id?: number;
-            userId: number;
-        }
-        currencies: any[]
-    }
+    portfolio: PortfolioDetails;
     userId: number;
     onCreatePortfolio: () => Promise<void>;
     hasPortfolio: boolean;
 }
 
 export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortfolio}: PortfolioBuilderInput) {
-    const [availableCurrencies, setAvailableCurrencies] = useState<any[]>([]);
-    const [activeCurrencies, setActiveCurrencies] = useState<any[]>(portfolio.currencies ?? []);
     const [showMetrics, setShowMetrics] = useState(false);
-
-    useEffect(() => {
-        fetch("http://localhost:8000/currency/")
-            .then((response) => response.json())
-            .then((data) => setAvailableCurrencies(data));
-    }, [])
-
-    const addCurrency = async (currency: any) => {
-        if(hasPortfolio) {
-            await fetch(`http://localhost:8000/portfolio/${portfolio.portfolio.id}/currencies/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    currencyId: currency.id
-                })
-            })
-        }
-        
-        setActiveCurrencies((actives) => [...actives, currency])
-    }
+    const { addRemoveCurrency, availableCurrencies } = useContext(AppContext);
     
-    const removeCurrency = async (currency: any) => {
-        if(hasPortfolio) {
-            if(activeCurrencies.length === 5) {
-                alert("You must have at least 5 currencies in your portfolio")
-                return;
-            }
-
-            await fetch(`http://localhost:8000/portfolio/${portfolio.portfolio.id}/currencies/`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    currencyId: currency.id
-                })
-            })
-        }
-        setActiveCurrencies((actives) => actives.filter(a => a.id !== currency.id))
-    }
-
     const createPortfolio = async () => {
-        if(activeCurrencies.length < 5) {
+        if(portfolio.currencies.length < 5) {
             alert("You must have at least 5 currencies in your portfolio")
             return;
         }
@@ -76,7 +29,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
             },
             body: JSON.stringify({ 
                 portfolio: { userId: userId }, 
-                currencies: activeCurrencies.map(c => ({
+                currencies: portfolio.currencies.map(c => ({
                     currencyId: c.id
                 })) 
             })
@@ -98,18 +51,18 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                     <button onClick={() => viewMetrics(true)}>View Metrics</button>
                 </span>
                 {
-                    activeCurrencies
+                    portfolio.currencies
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => removeCurrency(c)} name={c.name} />)
+                    .map(c => <CurrencyTile key={`active-${c.id}`} buttonText="Remove from Portfolio" click={() => addRemoveCurrency(c, false)} name={c.name} />)
                 } 
             </div>
             <div style={{flex: 1}}>
                 <h1>Available Currencies</h1>
                 {
                     availableCurrencies
-                    .filter(c => !activeCurrencies.find(ac => ac.id === c.id))
+                    .filter(c => !portfolio.currencies.find(ac => ac.id === c.id))
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(c => <CurrencyTile key={`available-${c.id}`} buttonText="Add To Portfolio" click={() => addCurrency(c)} name={c.name}/>)
+                    .map(c => <CurrencyTile key={`available-${c.id}`} buttonText="Add To Portfolio" click={() => addRemoveCurrency(c, true)} name={c.name}/>)
                 }
             </div>
         </div>
@@ -120,7 +73,7 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
             </div>
         }
         {
-            showMetrics && <Metrics userId={userId} onClose={() => viewMetrics(false)}/>
+            showMetrics && <Metrics portfolioId={portfolio.portfolio.id!} onClose={() => viewMetrics(false)}/>
         }
     </>);
 }

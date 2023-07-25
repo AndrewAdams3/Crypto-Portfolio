@@ -35,19 +35,18 @@ function MetricRow({ metric, highestVolume }: MetricRowProps) {
 }
 
 type MetricsProps = {
-    userId: number;
+    portfolioId: number;
     onClose: () => void;
 }
 
-export function Metrics({userId, onClose}: MetricsProps) {
+export function Metrics({portfolioId, onClose}: MetricsProps) {
     const [metrics, setMetrics] = useState<MetricResponse>();
 
     useEffect(() => {
-        //fetch metrics
-        fetch(`http://localhost:8000/portfolio/${userId}/metrics/`)
+        fetch(`http://localhost:8000/portfolio/${portfolioId}/metrics/`)
             .then((response) => response.json())
             .then((json: MetricResponse) => setMetrics(json))
-    }, []);
+    }, [portfolioId]);
 
     const rows = useMemo(() => {
         if(!metrics) return null;
@@ -55,7 +54,7 @@ export function Metrics({userId, onClose}: MetricsProps) {
         return metrics.currencies.map((metric) => (
             <MetricRow key={metric.id} metric={metric} highestVolume={metric.id === metrics.highestTradingVolume.id} />
         ))
-    }, [metrics]);
+    }, [portfolioId, metrics?.currencies, metrics?.highestTradingVolume]);
 
     return (
         <div className={classes.container}>
