@@ -34,10 +34,18 @@
 Crypto market data gathered via coingecko's public API (https://api.coingecko.com/api)
 
 # Improvements
-1. Standardized validation/serialization
+1. Improve usage of serializers
 2. Standardized exception handling / response messages
 3. Client is not organized at all, focus was on django backend
-    - Should use some form of state management (context, redux, etc.)
-    - Should centralize API calls into services
-    - Should do actual routing between pages (react-router)
+    - State management is pretty sloppy, all just thrown into a single context with setters drilled down to components
 4. AuthN/AuthZ
+
+
+#How to run
+1. clone the repo
+2. cd into repo
+3. cd into project/
+4. run `python manage.py migrate` 
+5. cd back into root of project
+6. run `docker compose up -d`
+7. site should be running at http://localhost:1234

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { CurrencyTile } from "../CurrencyTile";
 import * as classes from './styles.module.css';
 import { Metrics } from "../Metrics";

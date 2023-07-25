@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 
+from currencies.models import CurrencySnapshot
+
 from . models import *
 from . serializer import *
 
@@ -85,7 +87,7 @@ def add_currency(_: Request, portfolioId: int, currencyId):
 
     return Response(True, status=200)
 
-def remove_currency(request: Request, portfolioId: int, currencyId: int):
+def remove_currency(_: Request, portfolioId: int, currencyId: int):
     currencyAllocation = CurrencyAllocation.objects.get(portfolio_id=portfolioId, currency_id=currencyId)
     currencyAllocation.delete()
     return Response(True, status=200)
@@ -95,9 +97,13 @@ def remove_currency(request: Request, portfolioId: int, currencyId: int):
 def get_metrics(_: Request, portfolioId: int):
     with connection.cursor() as cursor:
         query = f'''
-            select c.name, c.symbol, ca.currency_id, cs.market_cap, cs.price, cs.volume, cs.price_change_percentage_24h from portfolios_currencyallocation as ca
-            left join currencies_currency as c on c.id = ca.currency_id
-            left join currencies_currencysnapshot as cs on ca.currency_id = cs.currency_id
+            select 
+                c.name, c.symbol, 
+                ca.currency_id, 
+                cs.market_cap, cs.price, cs.volume, cs.price_change_percentage_24h 
+            from {CurrencyAllocation._meta.db_table} as ca
+            left join {Currency._meta.db_table} as c on c.id = ca.currency_id
+            left join {CurrencySnapshot._meta.db_table} as cs on ca.currency_id = cs.currency_id
             where ca.portfolio_id = %s
         '''
         cursor.execute(query, [portfolioId])
