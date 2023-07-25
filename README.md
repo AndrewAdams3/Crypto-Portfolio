@@ -1,3 +1,6 @@
+#Architecture
+![Alt](./architecture.png)
+
 # Data Models
 ![Alt text](schema.png)
 
@@ -19,6 +22,8 @@
 # Project Structure
 - project/
     - Django App
+    - REST API
+    - Scheduled Celery task that pulls ctypto data from CoinGecko and syncs with database
 - ui/
     - React App
 - docker-compose.yml
@@ -29,6 +34,7 @@
     - Postgres
 - Dockerfile.celery
     - Dockerfile that defines the container for celery beat and worker processes to run in
+
 
 # Crypto Data
 Crypto market data gathered via coingecko's public API (https://api.coingecko.com/api)
@@ -41,7 +47,7 @@ Crypto market data gathered via coingecko's public API (https://api.coingecko.co
 4. AuthN/AuthZ
 
 
-#How to run
+# How to run
 1. clone the repo
 2. cd into repo
 3. run `pipenv install`
