@@ -44,8 +44,21 @@ Crypto market data gathered via coingecko's public API (https://api.coingecko.co
 #How to run
 1. clone the repo
 2. cd into repo
-3. cd into project/
-4. run `python manage.py migrate` 
-5. cd back into root of project
-6. run `docker compose up -d`
-7. site should be running at http://localhost:1234
+3. create a file in project/project called .env with the following content
+```
+REDIS_URL=redis://redis:6379/0
+POSTGRES_DB=my_database
+POSTGRES_USER=my_username
+POSTGRES_PASSWORD=my_password
+POSTGRES_PORT=5432
+POSTGRES_HOST=localhost
+```
+4. run `pipenv install`
+4. run `pipenv shell`
+5. run `docker compose up -d`
+6. cd into project/
+7. run `python manage.py migrate` 
+8. cd into ui/
+9. run `npm install`
+10. run `npm run dev`
+11. site should be running at http://localhost:1234

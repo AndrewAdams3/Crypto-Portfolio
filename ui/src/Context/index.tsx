@@ -105,7 +105,7 @@ export const AppProvider = ({ children }: React.PropsWithChildren) => {
         return newPortfolios;
       })
     } else {
-      if(portfolios[0].currencies.length <= 5) {
+      if(hasPortfolio && portfolios[0].currencies.length <= 5) {
         alert("You must have at least 5 currencies in your portfolio")
         return;
       }
