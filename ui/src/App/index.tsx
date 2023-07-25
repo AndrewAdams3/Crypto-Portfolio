@@ -22,7 +22,7 @@ export function App() {
             <button onClick={() => setCurrentUser(0)}>Logout</button>
             {
                 portfolios.length > 0 ? portfolios.map((p) => (
-                    <PortfolioBuilder key={p.portfolio.id} portfolio={p} userId={currentUser} onCreatePortfolio={fetchPortfolios} hasPortfolio={hasPortfolio} />
+                    <PortfolioBuilder key={`portfolio-${p.portfolio.id}`} portfolio={p} userId={currentUser} onCreatePortfolio={fetchPortfolios} hasPortfolio={hasPortfolio} />
                 )) :
                     <div>
                         <button onClick={createPortfolio}>Create Portfolio</button>

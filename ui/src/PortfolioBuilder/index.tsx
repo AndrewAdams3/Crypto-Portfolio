@@ -44,12 +44,12 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
     return (<>
         <div className={classes.container}>
             <div style={{flex: 1}}>
-                <span className={classes.portfolio_title}>
+                <div className={classes.portfolio_title}>
                     <h1>
                         Portfolio
                     </h1>
                     <button onClick={() => viewMetrics(true)}>View Metrics</button>
-                </span>
+                </div>
                 {
                     portfolio.currencies
                     .sort((a, b) => a.name.localeCompare(b.name))
@@ -57,7 +57,9 @@ export function PortfolioBuilder({portfolio, userId, onCreatePortfolio, hasPortf
                 } 
             </div>
             <div style={{flex: 1}}>
-                <h1>Available Currencies</h1>
+                <div className={classes.portfolio_title}>
+                    <h1>Available Currencies</h1>
+                </div>
                 {
                     availableCurrencies
                     .filter(c => !portfolio.currencies.find(ac => ac.id === c.id))
