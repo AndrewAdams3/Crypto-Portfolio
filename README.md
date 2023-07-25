@@ -1,4 +1,4 @@
-#Architecture
+# Architecture
 ![Alt](./architecture.png)
 
 # Data Models
